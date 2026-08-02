@@ -1,29 +1,32 @@
 #!/usr/bin/env node
 // 共读后端：书库 API + 阅读心跳/停留判定 + 批注存储 + AI 推送桥
-console.log("[reading] === STARTUP BEGIN ===");
-console.log("[reading] node version:", process.version);
+// 强制 stderr 无缓冲，确保崩溃前日志不丢
+const log = (...args) => { console.error(...args); if (typeof process.stdout.flush === 'function') process.stdout.flush(); };
+
+log("[reading] === STARTUP BEGIN ===");
+log("[reading] node version:", process.version);
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-console.log("[reading] loading store...");
+log("[reading] loading store...");
 const store = require("./lib/store");
-console.log("[reading] store loaded, DATA_DIR=" + store.DATA_DIR);
-console.log("[reading] loading push...");
+log("[reading] store loaded, DATA_DIR=" + store.DATA_DIR);
+log("[reading] loading push...");
 const { enqueueSystemMessage, PUSH_ENABLED } = require("./lib/push");
-console.log("[reading] push loaded, PUSH_ENABLED=" + PUSH_ENABLED);
-console.log("[reading] loading epub...");
+log("[reading] push loaded, PUSH_ENABLED=" + PUSH_ENABLED);
+log("[reading] loading epub...");
 const { parseEpub } = require("./lib/epub");
-console.log("[reading] loading txt...");
+log("[reading] loading txt...");
 const { parseTxt } = require("./lib/txt");
-console.log("[reading] loading import...");
+log("[reading] loading import...");
 const { importParsed } = require("./lib/import");
-console.log("[reading] all modules loaded");
+log("[reading] all modules loaded");
 
 const PORT = Number(process.env.PORT || process.env.READING_PORT || 18004);
 
 // 全局崩溃日志
-process.on("uncaughtException", (err) => { console.error("[reading] FATAL uncaughtException:", err.message, err.stack); process.exit(1); });
-process.on("unhandledRejection", (reason) => { console.error("[reading] FATAL unhandledRejection:", reason); process.exit(1); });
+process.on("uncaughtException", (err) => { log("[reading] FATAL uncaughtException: " + err.message + " " + (err.stack||"")); process.exit(1); });
+process.on("unhandledRejection", (reason) => { log("[reading] FATAL unhandledRejection: " + String(reason)); process.exit(1); });
 
 const DWELL_MS = Number(process.env.READING_DWELL_MS || 15000);
 const IDLE_CLOSE_MS = Number(process.env.READING_IDLE_MS || 5 * 60 * 1000);
@@ -631,15 +634,15 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-console.log("[reading] PORT=" + PORT + " dwell=" + DWELL_MS + "ms");
+log("[reading] PORT=" + PORT + " dwell=" + DWELL_MS + "ms");
 
 server.on("error", (err) => {
-  console.error(`[reading] server error: ${err.message} (code=${err.code})`);
+  log("[reading] server error: " + err.message + " (code=" + err.code + ")");
   process.exit(1);
 });
 
-console.log("[reading] starting to listen...");
+log("[reading] starting to listen...");
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`[reading] listening on 0.0.0.0:${PORT} pushEnabled=${PUSH_ENABLED} dwell=${DWELL_MS}ms idle=${IDLE_CLOSE_MS}ms`);
-  console.log("[reading] === STARTUP COMPLETE ===");
+  log("[reading] listening on 0.0.0.0:" + PORT + " pushEnabled=" + PUSH_ENABLED + " dwell=" + DWELL_MS + "ms idle=" + IDLE_CLOSE_MS + "ms");
+  log("[reading] === STARTUP COMPLETE ===");
 });
