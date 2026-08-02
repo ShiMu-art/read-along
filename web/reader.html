@@ -66,6 +66,9 @@ html, body { height: 100%; background: var(--bg); font-family: -apple-system, "P
 .reader-top { display: flex; align-items: center; padding: max(10px, env(safe-area-inset-top)) 14px 8px; font-size: 14px; color: var(--muted); }
 .r-back { font-size: 24px; padding: 0 10px 0 2px; }
 .r-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r-refresh { font-size: 20px; padding: 0 6px; color: var(--faint); cursor: pointer; }
+.r-refresh.spinning { animation: spin .6s linear; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .r-pencil { font-size: 19px; padding: 0 4px; }
 .r-mark { font-size: 18px; padding: 0 12px 0 4px; color: var(--faint); }
 .r-mark.on { color: var(--accent); }
@@ -182,6 +185,7 @@ html, body { height: 100%; background: var(--bg); font-family: -apple-system, "P
   <div class="reader-top">
     <div class="r-back" id="r-back">‹</div>
     <div class="r-title" id="r-title"></div>
+    <div class="r-refresh" id="r-refresh" title="刷新批注">↻</div>
     <div class="r-mark" id="r-mark">&#x2691;&#xFE0E;</div>
     <div class="r-pencil" id="r-pencil">✎</div>
   </div>
@@ -757,8 +761,30 @@ function openBar() {
 
 function closeBar() { reader.classList.remove('bar-open'); }
 
+/* ── 刷新批注 ── */
+async function refreshAnnotations() {
+  if (!R.book) return;
+  const btn = document.getElementById('r-refresh');
+  btn.classList.add('spinning');
+  try {
+    const { annotations } = await apiGet('/annotations/' + R.book.bookId);
+    const oldLen = R.annos.length;
+    R.annos = annotations;
+    renderChapterHtml(R.chapters[R.ch]);
+    paginate();
+    gotoPage(R.page, { silentIfSame: false });
+    if (annotations.length > oldLen) toast('有新批注');
+  } catch(e) {}
+  btn.classList.remove('spinning');
+}
+
+setInterval(() => {
+  if (reader.classList.contains('open') && !document.hidden) refreshAnnotations();
+}, 30000);
+
 reader.addEventListener('click', async (e) => {
   if (e.target.closest('#r-back')) { exitReader(); return; }
+  if (e.target.closest('#r-refresh')) { refreshAnnotations(); return; }
   if (e.target.closest('#r-pencil')) {
     reader.classList.contains('annotating') ? exitAnnotateMode() : enterAnnotateMode();
     return;
