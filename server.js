@@ -9,7 +9,7 @@ const { parseEpub } = require("./lib/epub");
 const { parseTxt } = require("./lib/txt");
 const { importParsed } = require("./lib/import");
 
-const PORT = Number(process.env.READING_PORT || 18004);
+const PORT = Number(process.env.PORT || process.env.READING_PORT || 18004);
 const DWELL_MS = Number(process.env.READING_DWELL_MS || 15000);
 const IDLE_CLOSE_MS = Number(process.env.READING_IDLE_MS || 5 * 60 * 1000);
 const DWELL_MIN_S = 5;
