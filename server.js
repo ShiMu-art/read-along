@@ -10,6 +10,11 @@ const { parseTxt } = require("./lib/txt");
 const { importParsed } = require("./lib/import");
 
 const PORT = Number(process.env.PORT || process.env.READING_PORT || 18004);
+
+// 全局崩溃日志
+process.on("uncaughtException", (err) => { console.error("[reading] FATAL uncaughtException:", err.message, err.stack); process.exit(1); });
+process.on("unhandledRejection", (reason) => { console.error("[reading] FATAL unhandledRejection:", reason); process.exit(1); });
+
 const DWELL_MS = Number(process.env.READING_DWELL_MS || 15000);
 const IDLE_CLOSE_MS = Number(process.env.READING_IDLE_MS || 5 * 60 * 1000);
 const DWELL_MIN_S = 5;
