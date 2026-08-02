@@ -1,0 +1,48 @@
+{
+  "bookId": "our-story",
+  "title": "test-book",
+  "author": "佚名",
+  "importedAt": "2026-08-02T01:47:42.659Z",
+  "sourceFile": "test-book.txt",
+  "chapterCount": 5,
+  "paraCount": 38,
+  "totalChars": 1267,
+  "coverExt": "",
+  "chapters": [
+    {
+      "idx": 0,
+      "title": "第一章 开始的早晨",
+      "baseSeq": 0,
+      "paraCount": 5,
+      "chars": 263
+    },
+    {
+      "idx": 1,
+      "title": "第二章 驾校的树荫",
+      "baseSeq": 5,
+      "paraCount": 7,
+      "chars": 232
+    },
+    {
+      "idx": 2,
+      "title": "第三章 夜晚的消息",
+      "baseSeq": 12,
+      "paraCount": 10,
+      "chars": 281
+    },
+    {
+      "idx": 3,
+      "title": "第四章 雨天的约定",
+      "baseSeq": 22,
+      "paraCount": 9,
+      "chars": 255
+    },
+    {
+      "idx": 4,
+      "title": "第五章 关于未来的事",
+      "baseSeq": 31,
+      "paraCount": 7,
+      "chars": 236
+    }
+  ]
+}

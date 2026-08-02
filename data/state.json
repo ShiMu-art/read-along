@@ -1,0 +1,25 @@
+{
+  "books": {
+    "our-story": {
+      "furthestSeq": 9,
+      "pushedRanges": [
+        [
+          0,
+          9
+        ]
+      ],
+      "lastPos": {
+        "chapter": 1,
+        "seqTop": 5,
+        "pageKey": "c1p0"
+      },
+      "lastOpenedAt": "2026-08-02T02:02:04.141Z",
+      "totalPushedChars": 406,
+      "totalReadMs": 138896,
+      "session": null
+    }
+  },
+  "settings": {
+    "dwellMs": 8000
+  }
+}
