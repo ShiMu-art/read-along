@@ -1,1 +1,0 @@
-web: sh -c 'echo ">>> PROCFILE STARTED <<<" >&2 && node server.js 2>&1'
