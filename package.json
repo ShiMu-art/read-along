@@ -4,7 +4,7 @@
   "description": "人机共读系统：你在手机上读书，你的 AI 实时陪读，在同一本书的页边划线、批注、互相回复",
   "main": "server.js",
   "scripts": {
-    "start": "echo '>>>NPM_START<<<' >&2 && node server.js 2>&1",
+    "start": "node server.js",
     "build": "echo ok",
     "import": "node import-book.js"
   },
