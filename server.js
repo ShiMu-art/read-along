@@ -421,12 +421,39 @@ function readBody(req) {
   });
 }
 
+// ── Push 收件箱（AI 侧轮询用） ──
+const INBOX_FILE = path.join(__dirname, "data", "inbox.json");
+let pushInbox = [];
+try { pushInbox = JSON.parse(fs.readFileSync(INBOX_FILE, "utf8")); } catch {}
+function saveInbox() { fs.writeFileSync(INBOX_FILE, JSON.stringify(pushInbox)); }
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   const p = url.pathname;
   let m;
 
   try {
+
+    // ── Push 收件箱路由 ──
+    if (req.method === "POST" && p === "/api/push-inbox") {
+      const body = await readBody(req);
+      const msg = { id: pushInbox.length + 1, text: body.text || "", source: body.source || "", createdAt: body.createdAt || new Date().toISOString(), read: false };
+      pushInbox.push(msg);
+      if (pushInbox.length > 500) pushInbox = pushInbox.slice(-200);
+      saveInbox();
+      return send(res, 200, { ok: true, id: msg.id });
+    }
+    if (req.method === "GET" && p === "/api/push-inbox") {
+      const unreadOnly = url.searchParams.get("unread") === "1";
+      const msgs = unreadOnly ? pushInbox.filter(m => !m.read) : pushInbox;
+      return send(res, 200, { messages: msgs.slice(-50), total: pushInbox.length });
+    }
+    if (req.method === "POST" && p === "/api/push-inbox/mark-read") {
+      const { ids } = await readBody(req);
+      if (Array.isArray(ids)) { for (const m of pushInbox) { if (ids.includes(m.id)) m.read = true; } saveInbox(); }
+      return send(res, 200, { ok: true });
+    }
+
     if (req.method === "GET" && p === "/api/books") {
       const state = store.readState();
       const books = store.listBookIds().map((bookId) => {
@@ -571,12 +598,24 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, pushEnabled: PUSH_ENABLED });
     }
 
+    // ── 静态文件：web/ 目录 ──
+    if (req.method === "GET") {
+      let filePath = p === "/" ? "/reader.html" : p;
+      const fullPath = path.join(__dirname, "web", filePath);
+      if (fullPath.startsWith(path.join(__dirname, "web")) && fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+        const ext = path.extname(fullPath).toLowerCase();
+        const mime = { ".html": "text/html; charset=utf-8", ".js": "application/javascript", ".css": "text/css", ".json": "application/json" }[ext] || "application/octet-stream";
+        res.writeHead(200, { "Content-Type": mime, "Cache-Control": "no-cache" });
+        return fs.createReadStream(fullPath).pipe(res);
+      }
+    }
+
     return send(res, 404, { error: "not found" });
   } catch (error) {
     return send(res, 500, { error: String(error?.message || error) });
   }
 });
 
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`[reading] listening on 127.0.0.1:${PORT} pushEnabled=${PUSH_ENABLED} dwell=${DWELL_MS}ms idle=${IDLE_CLOSE_MS}ms`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`[reading] listening on 0.0.0.0:${PORT} pushEnabled=${PUSH_ENABLED} dwell=${DWELL_MS}ms idle=${IDLE_CLOSE_MS}ms`);
 });
