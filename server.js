@@ -1,13 +1,23 @@
 #!/usr/bin/env node
 // 共读后端：书库 API + 阅读心跳/停留判定 + 批注存储 + AI 推送桥
+console.log("[reading] === STARTUP BEGIN ===");
+console.log("[reading] node version:", process.version);
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+console.log("[reading] loading store...");
 const store = require("./lib/store");
+console.log("[reading] store loaded, DATA_DIR=" + store.DATA_DIR);
+console.log("[reading] loading push...");
 const { enqueueSystemMessage, PUSH_ENABLED } = require("./lib/push");
+console.log("[reading] push loaded, PUSH_ENABLED=" + PUSH_ENABLED);
+console.log("[reading] loading epub...");
 const { parseEpub } = require("./lib/epub");
+console.log("[reading] loading txt...");
 const { parseTxt } = require("./lib/txt");
+console.log("[reading] loading import...");
 const { importParsed } = require("./lib/import");
+console.log("[reading] all modules loaded");
 
 const PORT = Number(process.env.PORT || process.env.READING_PORT || 18004);
 
@@ -621,6 +631,15 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+console.log("[reading] PORT=" + PORT + " dwell=" + DWELL_MS + "ms");
+
+server.on("error", (err) => {
+  console.error(`[reading] server error: ${err.message} (code=${err.code})`);
+  process.exit(1);
+});
+
+console.log("[reading] starting to listen...");
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`[reading] listening on 0.0.0.0:${PORT} pushEnabled=${PUSH_ENABLED} dwell=${DWELL_MS}ms idle=${IDLE_CLOSE_MS}ms`);
+  console.log("[reading] === STARTUP COMPLETE ===");
 });
