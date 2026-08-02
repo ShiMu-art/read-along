@@ -422,7 +422,7 @@ function readBody(req) {
 }
 
 // ── Push 收件箱（AI 侧轮询用） ──
-const INBOX_FILE = path.join(__dirname, "data", "inbox.json");
+const INBOX_FILE = path.join(require("./lib/store").DATA_DIR, "inbox.json");
 let pushInbox = [];
 try { pushInbox = JSON.parse(fs.readFileSync(INBOX_FILE, "utf8")); } catch {}
 function saveInbox() { fs.writeFileSync(INBOX_FILE, JSON.stringify(pushInbox)); }
